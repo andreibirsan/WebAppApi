@@ -15,15 +15,15 @@ stages:
   - job: Build
     displayName: Build
     steps:
-- task: Docker@2
-  inputs:
-    containerRegistry: 'andreibirsan docker hub'
-    repository: 'andreibirsan/todowebapp'
-    command: 'build'
-    Dockerfile: '**/Dockerfile'
-    tags: 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'andreibirsan docker hub'
-    repository: 'andreibirsan/todowebapp'
-    command: 'push'
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'andreibirsan docker hub'
+        repository: 'andreibirsan/todowebapp'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: 
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'andreibirsan docker hub'
+        repository: 'andreibirsan/todowebapp'
+        command: 'push'
