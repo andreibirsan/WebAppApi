@@ -14,13 +14,11 @@ stages:
   jobs:  
   - job: Build
     displayName: Build
-    pool:
-      vmImage: 'ubuntu-latest'
     steps:
     - task: Docker@2
       inputs:
         containerRegistry: 'andreibirsan docker hub'
-        repository: 'webappapi'
+        repository: 'andreibirsan/webappapi'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
