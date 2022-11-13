@@ -27,5 +27,3 @@ stages:
         repository: 'andreibirsan/todowebapp'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
-        tags: |
-          $(tag)
