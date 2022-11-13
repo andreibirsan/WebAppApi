@@ -24,7 +24,7 @@ stages:
       displayName: Build an image
       inputs:
         containerRegistry: 'andreibirsan docker hub'
-        repository: 'todowebapp'
+        repository: 'andreibirsan/todowebapp'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
