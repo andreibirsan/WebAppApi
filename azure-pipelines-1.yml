@@ -27,3 +27,4 @@ stages:
         containerRegistry: 'andreibirsan docker hub'
         repository: 'andreibirsan/todowebapp'
         command: 'push'
+        tags: 
