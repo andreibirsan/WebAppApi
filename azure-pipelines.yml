@@ -22,8 +22,8 @@ stages:
     steps:
     - task: Docker@2
       inputs:
-        containerRegistry: 'WebAppAPI'
-        repository: 'andreibirsan/webappapi'
+        containerRegistry: 'andreibirsan docker hub'
+        repository: 'webappapi'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
         tags: |
