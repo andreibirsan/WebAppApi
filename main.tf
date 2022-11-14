@@ -10,14 +10,14 @@ provider "azurerm" {
 }
 
 # Save the tfstate file in an Azure storage account. When running the terraform plan for the first time leave the backend part commented, then uncomment it to move the tfstate file to the cloud. 
-terraform {
-  backend "azurerm" {
-    resource_group_name  = "tf_rg_blobstore"
-    storage_account_name = "tfstorage131120222"
-    container_name       = "tfstate"
-    key                  = "terraform.tfstate"
-  }
-}
+#terraform {
+#  backend "azurerm" {
+#    resource_group_name  = "tf_rg_blobstore"
+#    storage_account_name = "tfstorage131120222"
+#    container_name       = "tfstate"
+#    key                  = "terraform.tfstate"
+#  }
+#} 
 
 # Generate a random integer to create a globally unique name
 resource "random_integer" "ri" {
@@ -47,7 +47,7 @@ resource "azurerm_storage_container" "tfstate" {
 
 # Create the resource group for the webapp
 resource "azurerm_resource_group" "tfrg-webapp" {
-  name     = "tf_rg_webapp-api"
+  name     = "tfrg_webapp-api"
   location = "West Europe"
 }
 
@@ -70,30 +70,80 @@ resource "azurerm_linux_web_app" "tf-webapp" {
 
   site_config {
     minimum_tls_version = "1.2"
-    
+
     application_stack {
-      docker_image        = "andreibirsan/todowebapp"
-      docker_image_tag    = "latest"
+      docker_image     = "andreibirsan/todowebapp"
+      docker_image_tag = "latest"
     }
   }
 }
 
-# Create the resourcegroup, storage account and container for the webapp
-resource "azurerm_resource_group" "tfrg-webapp-storageaccount" {
-  name     = "tf_webapp-storageaccount"
-  location = "West Europe"
-}
+# Create the storage account for the webapp
 
 resource "azurerm_storage_account" "tfstor-webapp" {
   name                     = "tfstoragewebapp"
-  resource_group_name      = azurerm_resource_group.tfrg-webapp-storageaccount.name
-  location                 = azurerm_resource_group.tfrg-webapp-storageaccount.location
+  resource_group_name      = azurerm_resource_group.tfrg-webapp.name
+  location                 = azurerm_resource_group.tfrg-webapp.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
-
+# Create the storage container for the webapp
 resource "azurerm_storage_container" "tfblob" {
   name                  = "tfblob-webapp"
   storage_account_name  = azurerm_storage_account.tfstor-webapp.name
   container_access_type = "private"
+}
+# Create the CosmosDB account for the webapp
+resource "azurerm_cosmosdb_account" "tfcosmosdb-account" {
+  name                      = "tfcosmosdb-account"
+  location                  = azurerm_resource_group.tfrg-webapp.location
+  resource_group_name       = azurerm_resource_group.tfrg-webapp.name
+  offer_type                = "Standard"
+  kind                      = "GlobalDocumentDB"
+  enable_automatic_failover = false
+
+  geo_location {
+    location          = azurerm_resource_group.tfrg-webapp.location
+    failover_priority = 0
+  }
+  consistency_policy {
+    consistency_level       = "BoundedStaleness"
+    max_interval_in_seconds = 300
+    max_staleness_prefix    = 100000
+  }
+  depends_on = [
+    azurerm_resource_group.tfrg-webapp
+  ]
+}
+
+# Create the CosmosDB SQL database for the webapp
+resource "azurerm_cosmosdb_sql_database" "tfcosmosdb-sql-database" {
+  name                = "tfcosmosdb-sql-database"
+  resource_group_name = azurerm_resource_group.tfrg-webapp.name
+  account_name        = azurerm_cosmosdb_account.tfcosmosdb-account.name
+}
+# Create the CosmosDB container for the webapp
+resource "azurerm_cosmosdb_sql_container" "tfcosmosdb-sql-container" {
+  name                = "tfcosmosdb-sql-container"
+  resource_group_name = azurerm_resource_group.tfrg-webapp.name
+  account_name        = azurerm_cosmosdb_account.tfcosmosdb-account.name
+  database_name       = azurerm_cosmosdb_sql_database.tfcosmosdb-sql-database.name
+  partition_key_path  = "/definition/id"
+}
+# Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
+resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-database" {
+  name               = "tf_webapp_serviceconnector_database"
+  app_service_id     = azurerm_linux_web_app.tf-webapp.id
+  target_resource_id = azurerm_cosmosdb_sql_database.tfcosmosdb-sql-database.id
+  authentication {
+    type = "systemAssignedIdentity"
+  }
+}
+resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-storage" {
+  name               = "tf_webapp_serviceconnector_storage"
+  app_service_id     = azurerm_linux_web_app.tf-webapp.id
+  target_resource_id = azurerm_storage_account.tfstor-webapp.id
+  authentication {
+    type = "systemAssignedIdentity"
+  }
 }
