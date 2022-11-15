@@ -12,6 +12,9 @@ variable "location" {
 variable "appservice_sku" {
 }
 
+variable "docker_image" {
+}
+
 variable "imagebuild" {
   type        = string
   description = "Latest Image Build"
