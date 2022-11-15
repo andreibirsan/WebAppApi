@@ -12,8 +12,8 @@ stages:
 - stage: Build
   displayName: Build and push Docker image
   jobs:  
-  - job: Build
-    displayName: Build and push Docker image
+  - job: Build Docker image
+    displayName: Build Docker image
     steps:
     - task: Docker@2
       inputs:
@@ -23,6 +23,9 @@ stages:
         Dockerfile: '**/Application/Dockerfile'
         tags: |
           $(tag)
+  - job: Push Docker image
+    displayName: Push Docker image
+    steps:
     - task: Docker@2
       inputs:
         containerRegistry: 'andreibirsan docker hub'
@@ -61,5 +64,5 @@ stages:
       inputs:
         azureSubscription: 'Azure'
         scriptType: 'pscore'
-        scriptLocation: 'scriptPath'
-        scriptPath: 'Infrastructure/Create service connectors.sh'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'Infrastructure/Create service connectors.sh'
