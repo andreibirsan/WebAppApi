@@ -11,7 +11,7 @@ resource "random_integer" "random" {
 resource "azurerm_resource_group" "tfrg-webapp" {
   name     = "tfrg_webapp-api"
   location = var.location
-  tags = var.tags
+  tags     = var.tags
 }
 
 # Create the App Service Plan
@@ -21,7 +21,7 @@ resource "azurerm_service_plan" "tf-appserviceplan" {
   resource_group_name = azurerm_resource_group.tfrg-webapp.name
   os_type             = "Linux"
   sku_name            = var.appservice_sku
-  tags = var.tags
+  tags                = var.tags
 }
 
 # Create the web app
@@ -31,7 +31,7 @@ resource "azurerm_linux_web_app" "tf-webapp" {
   resource_group_name = azurerm_resource_group.tfrg-webapp.name
   service_plan_id     = azurerm_service_plan.tf-appserviceplan.id
   https_only          = true
-  tags = var.tags
+  tags                = var.tags
   #app_settings = {
   #  "AZURE_COSMOS_LISTCONNECTIONSTRINGURL" = "https://management.azure.com${azurerm_cosmosdb_account.tfcosmosdb-account.id}/listConnectionStrings?api-version=2021-04-15"
   #  "AZURE_COSMOS_RESOURCEENDPOINT"        = "https://${azurerm_cosmosdb_account.tfcosmosdb-account.name}.documents.azure.com:443/"
@@ -137,9 +137,9 @@ resource "azurerm_monitor_autoscale_setting" "autoscale-setting" {
   }
   notification {
     email {
-      send_to_subscription_administrator    = true
+      send_to_subscription_administrator = true
     }
-  }  
+  }
 }
 
 # Create the storage account for the webapp
@@ -149,7 +149,7 @@ resource "azurerm_storage_account" "tfstor-webapp" {
   location                 = azurerm_resource_group.tfrg-webapp.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
-  tags = var.tags
+  tags                     = var.tags
 }
 
 # Create the storage container for the webapp
@@ -167,7 +167,7 @@ resource "azurerm_cosmosdb_account" "tfcosmosdb-account" {
   offer_type                = "Standard"
   kind                      = "GlobalDocumentDB"
   enable_automatic_failover = false
-  tags = var.tags
+  tags                      = var.tags
 
   geo_location {
     location          = azurerm_resource_group.tfrg-webapp.location
@@ -199,12 +199,18 @@ resource "azurerm_cosmosdb_sql_container" "tfcosmosdb-sql-container" {
   partition_key_path  = "/definition/id"
 }
 
-# Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
+/*
+Seems that after the initial terraform apply the managed identity and the connection strings are removed from the app service configuration.
+Therefore I chose to create the service connectors via azure cli in the script ./Create service connectors.sh
+I will leave the below code for historical purposes
+*/
+
+ /*# Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
 resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-database" {
   name               = "tfwebappserviceconnectordatabase"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
   target_resource_id = azurerm_cosmosdb_sql_database.tfcosmosdb-sql-database.id
-  client_type = "dotnet"
+  client_type        = "dotnet"
   authentication {
     type = "systemAssignedIdentity"
   }
@@ -215,8 +221,8 @@ resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-storage" {
   name               = "tfwebappserviceconnectorstorage"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
   target_resource_id = azurerm_storage_account.tfstor-webapp.id
-  client_type = "dotnet"
+  client_type        = "dotnet"
   authentication {
     type = "systemAssignedIdentity"
   }
-}
+} */

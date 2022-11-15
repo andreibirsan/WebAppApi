@@ -14,3 +14,8 @@ variable "docker_image" {
 
 variable "appservice_sku" {
 }
+
+variable "imagebuild" {
+  type        = string
+  description = "Latest Image Build"
+}

@@ -10,7 +10,7 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build image
+  displayName: Build Docker image
   jobs:  
   - job: Build
     displayName: Build
@@ -20,7 +20,7 @@ stages:
         containerRegistry: 'andreibirsan docker hub'
         repository: 'andreibirsan/todowebapp'
         command: 'build'
-        Dockerfile: '**/Dockerfile'
+        Dockerfile: '**/Application/Dockerfile'
         tags: |
           $(tag)
     - task: Docker@2
@@ -31,7 +31,7 @@ stages:
         tags: |
           $(tag)
 - stage: Provision
-  displayName: 'Deploying to Azure'
+  displayName: 'Terraforming to Azure'
   dependsOn: Build
   jobs:
   - job: Provision
