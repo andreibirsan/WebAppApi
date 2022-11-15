@@ -44,6 +44,7 @@ resource "azurerm_linux_web_app" "tf-webapp" {
 
     application_stack {
       docker_image     = "andreibirsan/todowebapp:${var.imagebuild}"
+      docker_image_tag = "${var.imagebuild}"
     }
   }
 }
