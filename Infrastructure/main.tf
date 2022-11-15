@@ -32,12 +32,6 @@ resource "azurerm_linux_web_app" "tf-webapp" {
   service_plan_id     = azurerm_service_plan.tf-appserviceplan.id
   https_only          = true
   tags                = var.tags
-  #app_settings = {
-  #  "AZURE_COSMOS_LISTCONNECTIONSTRINGURL" = "https://management.azure.com${azurerm_cosmosdb_account.tfcosmosdb-account.id}/listConnectionStrings?api-version=2021-04-15"
-  #  "AZURE_COSMOS_RESOURCEENDPOINT"        = "https://${azurerm_cosmosdb_account.tfcosmosdb-account.name}.documents.azure.com:443/"
-  #  "AZURE_COSMOS_SCOPE"                   = "https://management.azure.com/.default"
-  #  "AZURE_STORAGEBLOB_RESOURCEENDPOINT"   = "https://${azurerm_storage_account.tfstor-webapp.name}.blob.core.windows.net/"
-  #}
 
   site_config {
     minimum_tls_version = "1.2"
@@ -148,7 +142,7 @@ resource "azurerm_storage_account" "tfstor-webapp" {
   resource_group_name      = azurerm_resource_group.tfrg-webapp.name
   location                 = azurerm_resource_group.tfrg-webapp.location
   account_tier             = "Standard"
-  account_replication_type = "LRS"
+  account_replication_type = "GRS"
   tags                     = var.tags
 }
 
