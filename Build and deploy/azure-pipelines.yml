@@ -10,10 +10,10 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build and push Docker image
+  displayName: Build Docker image
   jobs:  
-  - job: Build Docker image
-    displayName: Build Docker image
+  - job: Build
+    displayName: Build and push Docker image
     steps:
     - task: Docker@2
       inputs:
@@ -23,9 +23,6 @@ stages:
         Dockerfile: '**/Application/Dockerfile'
         tags: |
           $(tag)
-  - job: Push Docker image
-    displayName: Push Docker image
-    steps:
     - task: Docker@2
       inputs:
         containerRegistry: 'andreibirsan docker hub'
