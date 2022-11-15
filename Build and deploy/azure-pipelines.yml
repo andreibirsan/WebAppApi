@@ -62,4 +62,4 @@ stages:
         azureSubscription: 'Azure'
         scriptType: 'pscore'
         scriptLocation: 'inlineScript'
-        inlineScript: 'Infrastructure/Create service connectors.sh'
+        inlineScript: 'Infrastructure/Create_service_connectors.sh'
