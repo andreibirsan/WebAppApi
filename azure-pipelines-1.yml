@@ -39,7 +39,7 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     variables: 
-    - group: TeraformEnvVars
+    - group: 'Terraform Service Principal variables'
     steps:
     - script: |
         set -e
