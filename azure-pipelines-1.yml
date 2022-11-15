@@ -21,10 +21,35 @@ stages:
         repository: 'andreibirsan/todowebapp'
         command: 'build'
         Dockerfile: '**/Dockerfile'
-        tags: 
+        tags: |
+          $(tag)
     - task: Docker@2
       inputs:
         containerRegistry: 'andreibirsan docker hub'
         repository: 'andreibirsan/todowebapp'
         command: 'push'
-        tags: 
+        tags: |
+          $(tag)
+- stage: Provision
+  displayName: 'Deploying to Azure'
+  dependsOn: Build
+  jobs:
+  - job: Provision
+    displayName: 'Terraforming'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables: 
+    - group: TeraformEnvVars
+    steps:
+    - script: |
+        set -e
+        terraform init -input=false
+        terraform apply -input=false -auto-approve
+      name: 'RunTerraform'
+      displayName: 'Run Terraform'
+      env:
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_TENANT_ID: $(ARM_TENANT_ID)
+        ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+        TF_VAR_imagebuild: $(tag)

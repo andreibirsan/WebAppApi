@@ -1,28 +1,3 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source = "hashicorp/azurerm"
-    }
-  }
-}
-
-provider "azurerm" {
-  features {}
-}
-
-# Save the tfstate file in an Azure storage account. 
-# When running the terraform plan for the first time leave the backend part commented, 
-# then uncomment it to move the tfstate file to the cloud. 
-
-#terraform {
-#  backend "azurerm" {
-#    resource_group_name  = "tf_rg_blobstore"
-#    storage_account_name = azurerm_storage_account.tfstor.name
-#    container_name       = "tfstate"
-#    key                  = "terraform.tfstate"
-#  }
-#} 
-
 # Generate a random integer to create a globally unique name
 resource "random_integer" "random" {
   min = 1000000
@@ -32,7 +7,7 @@ resource "random_integer" "random" {
   }
 }
 
-# Create the resourcegroup, storage account and container for the terraform backend used above
+/* Create the resourcegroup, storage account and container for the terraform backend
 resource "azurerm_resource_group" "tfrg" {
   name     = "tfrg_stor_backend"
   location = var.location
@@ -52,7 +27,7 @@ resource "azurerm_storage_container" "tfstate" {
   name                  = "tfstate"
   storage_account_name  = azurerm_storage_account.tfstor.name
   container_access_type = "private"
-}
+}  */
 
 # Create the resource group for the webapp
 resource "azurerm_resource_group" "tfrg-webapp" {
@@ -79,6 +54,12 @@ resource "azurerm_linux_web_app" "tf-webapp" {
   service_plan_id     = azurerm_service_plan.tf-appserviceplan.id
   https_only          = true
   tags = var.tags
+  #app_settings = {
+  #  "AZURE_COSMOS_LISTCONNECTIONSTRINGURL" = "https://management.azure.com${azurerm_cosmosdb_account.tfcosmosdb-account.id}/listConnectionStrings?api-version=2021-04-15"
+  #  "AZURE_COSMOS_RESOURCEENDPOINT"        = "https://${azurerm_cosmosdb_account.tfcosmosdb-account.name}.documents.azure.com:443/"
+  #  "AZURE_COSMOS_SCOPE"                   = "https://management.azure.com/.default"
+  #  "AZURE_STORAGEBLOB_RESOURCEENDPOINT"   = "https://${azurerm_storage_account.tfstor-webapp.name}.blob.core.windows.net/"
+  #}
 
   site_config {
     minimum_tls_version = "1.2"
@@ -245,6 +226,7 @@ resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-database" 
   name               = "tfwebappserviceconnectordatabase"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
   target_resource_id = azurerm_cosmosdb_sql_database.tfcosmosdb-sql-database.id
+  client_type = "dotnet"
   authentication {
     type = "systemAssignedIdentity"
   }
@@ -255,6 +237,7 @@ resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-storage" {
   name               = "tfwebappserviceconnectorstorage"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
   target_resource_id = azurerm_storage_account.tfstor-webapp.id
+  client_type = "dotnet"
   authentication {
     type = "systemAssignedIdentity"
   }
