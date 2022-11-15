@@ -43,8 +43,7 @@ resource "azurerm_linux_web_app" "tf-webapp" {
     minimum_tls_version = "1.2"
 
     application_stack {
-      docker_image     = var.docker_image
-      docker_image_tag = "latest"
+      docker_image     = "andreibirsan/todowebapp:${var.imagebuild}"
     }
   }
 }

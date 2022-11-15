@@ -9,10 +9,6 @@ variable "tags" {
 variable "location" {
 }
 
-variable "docker_image" {
-  default = "andreibirsan/todowebapp:${var.imagebuild}"
-}
-
 variable "appservice_sku" {
 }
 
