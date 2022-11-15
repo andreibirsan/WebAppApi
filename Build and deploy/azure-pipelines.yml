@@ -30,7 +30,8 @@ stages:
         command: 'push'
         tags: |
           $(tag)
-- stage: Provision
+          
+- stage: Terraforming
   displayName: 'Terraforming to Azure'
   dependsOn: Build
   jobs:
@@ -43,6 +44,7 @@ stages:
     steps:
     - script: |
         set -e
+
         terraform init -input=false
         terraform apply -input=false -auto-approve
       name: 'RunTerraform'
@@ -53,3 +55,16 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
         TF_VAR_imagebuild: $(tag)
+
+- stage: 'Create service connectors'
+  dependsOn: Terraforming
+  displayName: 'Create service connectors'
+  jobs:
+  - job: 'Create service connectors'
+    steps: 
+    - task: AzureCLI@2
+      inputs:
+      azureSubscription: 'Azure'
+      scriptType: 'ps'
+      scriptLocation: 'scriptPath'
+      scriptPath: '**/Infrastructure/Create service connectors.sh'
