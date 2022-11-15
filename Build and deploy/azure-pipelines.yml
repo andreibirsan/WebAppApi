@@ -13,7 +13,7 @@ stages:
   displayName: Build Docker image
   jobs:  
   - job: Build
-    displayName: Build
+    displayName: Build Docker image
     steps:
     - task: Docker@2
       inputs:
@@ -36,7 +36,7 @@ stages:
   dependsOn: Build
   jobs:
   - job: Provision
-    displayName: 'Terraforming'
+    displayName: 'Terraforming to Azure'
     pool:
       vmImage: 'ubuntu-latest'
     variables: 
@@ -44,6 +44,7 @@ stages:
     steps:
     - script: |
         set -e
+        cd Infrastructure
 
         terraform init -input=false
         terraform apply -input=false -auto-approve
