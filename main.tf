@@ -5,38 +5,47 @@ terraform {
     }
   }
 }
+
 provider "azurerm" {
   features {}
 }
 
-# Save the tfstate file in an Azure storage account. When running the terraform plan for the first time leave the backend part commented, then uncomment it to move the tfstate file to the cloud. 
+# Save the tfstate file in an Azure storage account. 
+# When running the terraform plan for the first time leave the backend part commented, 
+# then uncomment it to move the tfstate file to the cloud. 
+
 #terraform {
 #  backend "azurerm" {
 #    resource_group_name  = "tf_rg_blobstore"
-#    storage_account_name = "tfstorage131120222"
+#    storage_account_name = azurerm_storage_account.tfstor.name
 #    container_name       = "tfstate"
 #    key                  = "terraform.tfstate"
 #  }
 #} 
 
 # Generate a random integer to create a globally unique name
-resource "random_integer" "ri" {
-  min = 10000
-  max = 99999
+resource "random_integer" "random" {
+  min = 1000000
+  max = 9999999
+  keepers = {
+    tfrg_id = azurerm_resource_group.tfrg.id
+  }
 }
 
-# Create the resourcegroup, storage account and container for the terraform backen used above
+# Create the resourcegroup, storage account and container for the terraform backend used above
 resource "azurerm_resource_group" "tfrg" {
-  name     = "tf_rg_blobstore"
-  location = "West Europe"
+  name     = "tfrg_stor_backend"
+  location = var.location
+  tags = var.tags
 }
 
 resource "azurerm_storage_account" "tfstor" {
-  name                     = "tfstorage131120222"
+  name                     = "tfstorage${random_integer.random.id}"
   resource_group_name      = azurerm_resource_group.tfrg.name
   location                 = azurerm_resource_group.tfrg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  tags = var.tags
 }
 
 resource "azurerm_storage_container" "tfstate" {
@@ -48,7 +57,8 @@ resource "azurerm_storage_container" "tfstate" {
 # Create the resource group for the webapp
 resource "azurerm_resource_group" "tfrg-webapp" {
   name     = "tfrg_webapp-api"
-  location = "West Europe"
+  location = var.location
+  tags = var.tags
 }
 
 # Create the App Service Plan
@@ -57,50 +67,148 @@ resource "azurerm_service_plan" "tf-appserviceplan" {
   location            = azurerm_resource_group.tfrg-webapp.location
   resource_group_name = azurerm_resource_group.tfrg-webapp.name
   os_type             = "Linux"
-  sku_name            = "B1"
+  sku_name            = var.appservice_sku
+  tags = var.tags
 }
 
 # Create the web app
 resource "azurerm_linux_web_app" "tf-webapp" {
-  name                = "tf-webapp-api"
+  name                = "webapp-api${random_integer.random.id}"
   location            = azurerm_resource_group.tfrg-webapp.location
   resource_group_name = azurerm_resource_group.tfrg-webapp.name
   service_plan_id     = azurerm_service_plan.tf-appserviceplan.id
   https_only          = true
+  tags = var.tags
 
   site_config {
     minimum_tls_version = "1.2"
 
     application_stack {
-      docker_image     = "andreibirsan/todowebapp"
+      docker_image     = var.docker_image
       docker_image_tag = "latest"
     }
   }
 }
 
-# Create the storage account for the webapp
+# Create the App Service Plan scale out settings
+resource "azurerm_monitor_autoscale_setting" "autoscale-setting" {
+  name                = "tf_app-service-plan_webapp-api-autoscale-settings"
+  resource_group_name = azurerm_resource_group.tfrg-webapp.name
+  location            = azurerm_resource_group.tfrg-webapp.location
+  target_resource_id  = azurerm_service_plan.tf-appserviceplan.id
+  profile {
+    name = "Default scaling"
+    capacity {
+      default = 1
+      minimum = 1
+      maximum = 20
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_service_plan.tf-appserviceplan.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 90
+      }
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_service_plan.tf-appserviceplan.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 10
+      }
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "MemoryPercentage"
+        metric_resource_id = azurerm_service_plan.tf-appserviceplan.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 85
+      }
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "MemoryPercentage"
+        metric_resource_id = azurerm_service_plan.tf-appserviceplan.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 50
+      }
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+  }
+  notification {
+    email {
+      send_to_subscription_administrator    = true
+    }
+  }  
+}
 
+# Create the storage account for the webapp
 resource "azurerm_storage_account" "tfstor-webapp" {
-  name                     = "tfstoragewebapp"
+  name                     = "tfstoragewebapp${random_integer.random.id}"
   resource_group_name      = azurerm_resource_group.tfrg-webapp.name
   location                 = azurerm_resource_group.tfrg-webapp.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  tags = var.tags
 }
+
 # Create the storage container for the webapp
 resource "azurerm_storage_container" "tfblob" {
   name                  = "tfblob-webapp"
   storage_account_name  = azurerm_storage_account.tfstor-webapp.name
   container_access_type = "private"
 }
+
 # Create the CosmosDB account for the webapp
 resource "azurerm_cosmosdb_account" "tfcosmosdb-account" {
-  name                      = "tfcosmosdb-account"
+  name                      = "tfcosmosdb-account${random_integer.random.id}"
   location                  = azurerm_resource_group.tfrg-webapp.location
   resource_group_name       = azurerm_resource_group.tfrg-webapp.name
   offer_type                = "Standard"
   kind                      = "GlobalDocumentDB"
   enable_automatic_failover = false
+  tags = var.tags
 
   geo_location {
     location          = azurerm_resource_group.tfrg-webapp.location
@@ -122,6 +230,7 @@ resource "azurerm_cosmosdb_sql_database" "tfcosmosdb-sql-database" {
   resource_group_name = azurerm_resource_group.tfrg-webapp.name
   account_name        = azurerm_cosmosdb_account.tfcosmosdb-account.name
 }
+
 # Create the CosmosDB container for the webapp
 resource "azurerm_cosmosdb_sql_container" "tfcosmosdb-sql-container" {
   name                = "tfcosmosdb-sql-container"
@@ -130,17 +239,20 @@ resource "azurerm_cosmosdb_sql_container" "tfcosmosdb-sql-container" {
   database_name       = azurerm_cosmosdb_sql_database.tfcosmosdb-sql-database.name
   partition_key_path  = "/definition/id"
 }
+
 # Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
 resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-database" {
-  name               = "tf_webapp_serviceconnector_database"
+  name               = "tfwebappserviceconnectordatabase"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
   target_resource_id = azurerm_cosmosdb_sql_database.tfcosmosdb-sql-database.id
   authentication {
     type = "systemAssignedIdentity"
   }
 }
+
+# Create the service connector from the app service to the storage account. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
 resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-storage" {
-  name               = "tf_webapp_serviceconnector_storage"
+  name               = "tfwebappserviceconnectorstorage"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
   target_resource_id = azurerm_storage_account.tfstor-webapp.id
   authentication {
