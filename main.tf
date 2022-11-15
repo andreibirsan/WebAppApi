@@ -3,31 +3,9 @@ resource "random_integer" "random" {
   min = 1000000
   max = 9999999
   keepers = {
-    tfrg_id = azurerm_resource_group.tfrg.id
+    tfrg_id = azurerm_resource_group.tfrg-webapp.id
   }
 }
-
-/* Create the resourcegroup, storage account and container for the terraform backend
-resource "azurerm_resource_group" "tfrg" {
-  name     = "tfrg_stor_backend"
-  location = var.location
-  tags = var.tags
-}
-
-resource "azurerm_storage_account" "tfstor" {
-  name                     = "tfstorage${random_integer.random.id}"
-  resource_group_name      = azurerm_resource_group.tfrg.name
-  location                 = azurerm_resource_group.tfrg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  tags = var.tags
-}
-
-resource "azurerm_storage_container" "tfstate" {
-  name                  = "tfstate"
-  storage_account_name  = azurerm_storage_account.tfstor.name
-  container_access_type = "private"
-}  */
 
 # Create the resource group for the webapp
 resource "azurerm_resource_group" "tfrg-webapp" {
