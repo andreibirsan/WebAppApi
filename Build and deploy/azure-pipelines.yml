@@ -60,7 +60,10 @@ stages:
   dependsOn: Terraforming
   displayName: 'Create service connectors'
   jobs:
-  - job: 'Create service connectors'
+  - job: Connectors
+    displayName: 'Create service connectors'
+    pool:
+      vmImage: 'ubuntu-latest'
     steps: 
     - task: AzureCLI@2
       inputs:
