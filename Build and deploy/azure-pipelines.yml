@@ -62,4 +62,4 @@ stages:
         azureSubscription: 'Azure'
         scriptType: 'pscore'
         scriptLocation: 'scriptPath'
-        scriptPath: '**/Infrastructure/Create service connectors.sh'
+        scriptPath: '*/Infrastructure/Create service connectors.sh'
