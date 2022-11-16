@@ -44,13 +44,6 @@ resource "azurerm_linux_web_app" "tf-webapp" {
   }
 }
 
-resource "azuread_application" "tf-webapp-application" {
-  display_name = "tf-webapp-application"
-  feature_tags {
-    enterprise = true
-  }
-}
-
 # Create the App Service Plan scale out settings
 resource "azurerm_monitor_autoscale_setting" "autoscale-setting" {
   name                = "tf_app-service-plan_webapp-api-autoscale-settings"
