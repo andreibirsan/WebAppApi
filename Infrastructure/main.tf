@@ -35,11 +35,19 @@ resource "azurerm_linux_web_app" "tf-webapp" {
 
   site_config {
     minimum_tls_version = "1.2"
+    ftps_state = "Disabled"
 
     application_stack {
       docker_image     = var.docker_image
       docker_image_tag = var.imagebuild
     }
+  }
+}
+
+resource "azuread_application" "tf-webapp-application" {
+  display_name = "tf-webapp-application"
+  feature_tags {
+    enterprise = true
   }
 }
 
