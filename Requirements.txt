@@ -1,0 +1,20 @@
+Requirements:
+
+Automate the creation of the necessary infrastructure (optional: and deployment) of a web API hosted on Microsoft Azure, in a region of your choice.
+The web API should have access to a database and a storage account. Provision a database and a storage account and make sure the web app can access them (you don't need to add any actual code to access the database).
+
+What you must consider during this exercise:
+● Security: take the necessary steps to provide a secure infrastructure
+● Scalability and cost control: 
+what would be required to scale the service to more users? 
+What criteria would you use to scale the service? 
+How would you ensure that the solution is cost effective?
+
+Starting point:
+an Azure account - you need to create yourself one
+Have a look here: https://azure.microsoft.com/en-us/free/ and check out Azure free account
+
+Expected result
+● a set of scripts that can be used to recreate the infrastructure from scratch
+You can use the automation tool(s) of your choice
+● A README file containing short documentation
