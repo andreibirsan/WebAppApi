@@ -8,12 +8,12 @@ The scope of this project is to create a CI/CD pipeline for an app which has to 
 The solution has to take into consideration security best practices, scalability and cost control.
 
 # Shoping list
-API code - https://github.com/Azure-Samples/dotnet-core-api
-GitHub account - free
-Docker Hub account - free
-Terraform - free
-Azure DevOps account - free
-Azure subscription - free tier available for 30 days
+- API code - https://github.com/Azure-Samples/dotnet-core-api
+- GitHub account - free
+- Docker Hub account - free
+- Terraform - free
+- Azure DevOps account - free
+- Azure subscription - free tier available for 30 days
 
 ## Workflow
 
