@@ -55,3 +55,9 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
         TF_VAR_imagebuild: $(tag)
+    - task: AzurePowerShell@5
+      inputs:
+        azureSubscription: 'Azure'
+        ScriptType: 'FilePath'
+        ScriptPath: 'Infrastructure/Create_service_connectors.ps1'
+
