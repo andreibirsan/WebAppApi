@@ -1,3 +1,7 @@
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
 $WebAppName = Get-AzWebApp -ResourceGroupName tfrg_webapp-api
 $StorageAccount = Get-AzStorageAccount -ResourceGroupName tfrg_webapp-api
 $CosmosDbAccount = Get-AzCosmosDBAccount -ResourceGroupName tfrg_webapp-api
