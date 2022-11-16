@@ -60,4 +60,4 @@ By using the Azure Cosmos DB the costs ar kept to a minimum as we pay only for w
 
 ## Architecture
 
-![Architecture](./Documentation/Azure%20diagram.png)
+![Architecture](./Documentation/Azure_diagram.png)
