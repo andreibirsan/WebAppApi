@@ -196,11 +196,10 @@ resource "azurerm_cosmosdb_sql_container" "tfcosmosdb-sql-container" {
 
 /*
 Seems that after the initial terraform apply the managed identity and the connection strings are removed from the app service configuration.
-Therefore I chose to create the service connectors via azure cli in the script ./Create service connectors.sh
-I will leave the below code for historical purposes
+To find a solution for this!
 */
 
- /*# Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
+ # Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
 resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-database" {
   name               = "tfwebappserviceconnectordatabase"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
@@ -220,4 +219,4 @@ resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-storage" {
   authentication {
     type = "systemAssignedIdentity"
   }
-} */
+} 
