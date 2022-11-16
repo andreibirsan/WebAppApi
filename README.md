@@ -7,7 +7,7 @@ This project contains the code of a ToDo ASP.NET Core app, the yml file used for
 The scope of this project is to create a CI/CD pipeline for an app which has to be able to connect to a storage account and to a database.
 The solution has to take into consideration security best practices, scalability and cost control.
 
-# Shoping list
+# Shopping list
 - API code - https://github.com/Azure-Samples/dotnet-core-api
 - GitHub account - free
 - Docker Hub account - free
@@ -56,7 +56,7 @@ Any application has an expected threshold of usage, but there might be also case
 
 In order to provide a better experience, but in the same time keep the costs under control, not spending too much on something that nobody is using I introduced an autoscaling profile on the App Service, based on CPU and memory metrics. The autoscalling is adding a new instance of compute if the metrics are above the threshold set, but in case they get lower than a specified level then the number of instances is reduced gradually until it reaches the optimal level.
 
-By using the Azure Cosmos DB the costs ar kept to a minimum as we pay only for what we use and we can benefit of a service managed by Azure.
+By using the Azure Cosmos DB the costs are kept to a minimum as we pay only for what we use and we can benefit of a service managed by Azure.
 
 ## Architecture
 
