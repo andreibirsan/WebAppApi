@@ -33,9 +33,19 @@ resource "azurerm_linux_web_app" "tf-webapp" {
   https_only          = true
   tags                = var.tags
 
+  app_settings = {
+    "AZURE_COSMOS_LISTCONNECTIONSTRINGURL" = "https://management.azure.com${azurerm_cosmosdb_account.tfcosmosdb-account.id}/listConnectionStrings?api-version=2021-04-15"
+    "AZURE_COSMOS_RESOURCEENDPOINT"        = "${azurerm_cosmosdb_account.tfcosmosdb-account.endpoint}"
+    "AZURE_COSMOS_SCOPE"                   = "https://management.azure.com/.default"
+    "AZURE_STORAGEBLOB_RESOURCEENDPOINT"   = "${azurerm_storage_account.tfstor-webapp.primary_blob_endpoint}"
+  }
+  identity {
+    type = "SystemAssigned"
+  }
   site_config {
-    minimum_tls_version = "1.2"
-    ftps_state = "Disabled"
+    minimum_tls_version     = "1.2"
+    ftps_state              = "Disabled"
+    scm_minimum_tls_version = "1.2"
 
     application_stack {
       docker_image     = var.docker_image
@@ -50,6 +60,7 @@ resource "azurerm_monitor_autoscale_setting" "autoscale-setting" {
   resource_group_name = azurerm_resource_group.tfrg-webapp.name
   location            = azurerm_resource_group.tfrg-webapp.location
   target_resource_id  = azurerm_service_plan.tf-appserviceplan.id
+
   profile {
     name = "Default scaling"
     capacity {
@@ -139,12 +150,22 @@ resource "azurerm_monitor_autoscale_setting" "autoscale-setting" {
 
 # Create the storage account for the webapp
 resource "azurerm_storage_account" "tfstor-webapp" {
-  name                     = "tfstoragewebapp${random_integer.random.id}"
-  resource_group_name      = azurerm_resource_group.tfrg-webapp.name
-  location                 = azurerm_resource_group.tfrg-webapp.location
-  account_tier             = "Standard"
-  account_replication_type = "GRS"
-  tags                     = var.tags
+  name                      = "tfstoragewebapp${random_integer.random.id}"
+  resource_group_name       = azurerm_resource_group.tfrg-webapp.name
+  location                  = azurerm_resource_group.tfrg-webapp.location
+  account_tier              = "Standard"
+  access_tier               = "Hot"
+  account_kind              = "StorageV2"
+  account_replication_type  = "GRS"
+  min_tls_version           = "TLS1_2"
+  enable_https_traffic_only = "true"
+  tags                      = var.tags
+  network_rules {
+    bypass                     = ["AzureServices"]
+    default_action             = "Allow"
+    ip_rules                   = []
+    virtual_network_subnet_ids = []
+  }
 }
 
 # Create the storage container for the webapp
@@ -199,7 +220,7 @@ Seems that after the initial terraform apply the managed identity and the connec
 To find a solution for this!
 */
 
- # Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
+# Create the service connector from the app service to the database. Resource name can only contain letters, numbers (0-9), periods ('.'), and underscores ('_')
 resource "azurerm_app_service_connection" "tf-webapp-serviceconnector-database" {
   name               = "tfwebappserviceconnectordatabase"
   app_service_id     = azurerm_linux_web_app.tf-webapp.id
