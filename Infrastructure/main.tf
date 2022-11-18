@@ -34,7 +34,7 @@ resource "azurerm_linux_web_app" "tf-webapp" {
   tags                = var.tags
 
   app_settings = {
-    "AZURE_STORAGEBLOB_TFWEBAPPSERVICECONNECTORSTORAGE_RESOURCEENDPOINT" = "https://management.azure.com${azurerm_cosmosdb_account.tfcosmosdb-account.id}/listConnectionStrings?api-version=2021-04-15"
+    "AZURE_COSMOS_TFWEBAPPSERVICECONNECTORDATABASE_LISTCONNECTIONSTRINGURL" = "https://management.azure.com${azurerm_cosmosdb_account.tfcosmosdb-account.id}/listConnectionStrings?api-version=2021-04-15"
     "AZURE_COSMOS_TFWEBAPPSERVICECONNECTORDATABASE_RESOURCEENDPOINT"        = "${azurerm_cosmosdb_account.tfcosmosdb-account.endpoint}"
     "AZURE_COSMOS_TFWEBAPPSERVICECONNECTORDATABASE_SCOPE"                   = "https://management.azure.com/.default"
     "AZURE_STORAGEBLOB_TFWEBAPPSERVICECONNECTORSTORAGE_RESOURCEENDPOINT"   = "${azurerm_storage_account.tfstor-webapp.primary_blob_endpoint}"
