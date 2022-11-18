@@ -1,4 +1,4 @@
-# ToDo - WebApp API 
+# ToDo - WebApp API  
 
 This project contains the code of a ToDo ASP.NET Core app, the yml file used for the Azure DevOps build and deployment pipeline and the Terraform files needed in order to create the infrastructure for the app.
 
